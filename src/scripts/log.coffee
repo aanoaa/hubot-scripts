@@ -3,10 +3,35 @@
 # save messages in this channel - http://example.com/
 
 _ = require "underscore"
-http = require 'http'
+http = require('express').createServer()
 mongoose = require 'mongoose'
 
-class Log
+class Router
+  constructor: (@logger) ->
+    http.listen(8888)
+    http.get '/channel/:channel', (req, res) =>
+      dt = new Date()
+      res.redirect("/channel/#{req.params.channel}/date/#{new Date().toString()}")
+    http.get '/channel/:channel/date/:date', (req, res) =>
+      dt = new Date "#{req.params.date}"
+      from = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()).getTime()
+      to = from + (86399 * 1000)
+      @logger.model["##{req.params.channel}"].find { timestamp: { $gt: from, $lt: to } }, (err, logs) ->
+        console.log err if err # TODO: better error handling
+        msg = []
+        _.each logs, (log) ->
+          # html 을 구성해서 주자
+          msg.push log
+        res.send JSON.stringify(msg)
+    http.get '/channel/:channel/date/:date/:epoch', (req, res) =>
+      @logger.model["##{req.params.channel}"].find { timestamp: { $gt: req.params.epoch } }, (err, logs) ->
+        console.log err if err # TODO: better error handling
+        msg = []
+        _.each logs, (log) ->
+          msg.push log
+        res.send JSON.stringify(msg)
+
+class Logger
   constructor: (mongoose, opts) ->
     @connect opts.host, opts.db
     @model = {}
@@ -15,20 +40,15 @@ class Log
       mongoose.model channel, new Schema
         nickName: String
         message: String
-        timestamp: { type: Date, default: new Date().toJSON() }
+        timestamp: { type: Number, default: new Date().getTime() }
       @model[channel] = mongoose.model channel
-    http.createServer (req, res) =>
-      # /channel/perl-kr/date/2012-02-10/ => 오늘꺼 주고, 이후는 계속해서주자
-      res.writeHead 200, { "Content-Type": "text/plain" }
-      res.write 'hello world'
-      res.end()
-    .listen(8888)
+    new Router(@)
   connect: (host, db) =>
     @db = mongoose.connect "mongodb://#{host}/#{db}"
   save: (msg) =>
     log = new @model[msg.user.room]
     log.nickName = msg.user.name
-    log.message = msg.text.toString 'utf8'
+    log.message = msg.text
     log.save() # TODO: error handling function(err)
   dump: =>
     _.each process.env.HUBOT_IRC_ROOMS.split(','), (channel) =>
@@ -38,10 +58,10 @@ class Log
           console.log log.message
           console.log log.timestamp
 
-log = new Log mongoose,
+logger = new Logger mongoose,
   host: process.env.HUBOT_LOG_DBHOST or 'localhost'
   db: 'irc_log'
 
 module.exports = (robot) ->
   robot.hear /(.+)/, (msg) ->
-    log.save msg.message
+    logger.save msg.message
