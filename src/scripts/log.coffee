@@ -9,6 +9,8 @@ mongoose = require 'mongoose'
 class Router
   constructor: (@logger) ->
     http.listen(8888)
+    http.get '/', (req, res) ->
+      res.sendfile("#{__dirname}/log.html")
     http.get '/channel/:channel', (req, res) =>
       dt = new Date()
       res.redirect("/channel/#{req.params.channel}/date/#{new Date().toString()}")
@@ -20,7 +22,6 @@ class Router
         console.log err if err # TODO: better error handling
         msg = []
         _.each logs, (log) ->
-          # html 을 구성해서 주자
           msg.push log
         res.send JSON.stringify(msg)
     http.get '/channel/:channel/date/:date/:epoch', (req, res) =>
