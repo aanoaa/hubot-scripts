@@ -1,39 +1,34 @@
 # logging.
 #
-# logging HUBOT_IRC_ROOMS messages then toJSON via WEB - http://HUBOT_LOG_HOST:HUBOT_LOG_PORT
+# logging HUBOT_IRC_ROOMS messages and view to JSON on http://HUBOT_LOG_HOST:HUBOT_LOG_PORT
 
-_ = require "underscore"
-http = require('express').createServer()
+_ = require 'underscore'
+express = require 'express'
 mongoose = require 'mongoose'
+http = express.createServer(express.logger())
+http.set("jsonp callback", true)
 
 class Router
   constructor: (@logger, opts) ->
     http.listen(opts.port)
-    http.get '/', (req, res) =>
-      msg = []
-      _.each process.env.HUBOT_IRC_ROOMS.split(','), (channel) =>
-        msg.push "http://#{opts.host}:#{opts.port}/channel/#{channel.split('#')[1]}"
-      res.send JSON.stringify(msg)
+    http.get '/channel', (req, res) =>
+      res.json process.env.HUBOT_IRC_ROOMS.split(',')
     http.get '/channel/:channel', (req, res) =>
       dt = new Date()
-      res.redirect("/channel/#{req.params.channel}/date/#{dt.getFullYear()}-#{dt.getMonth()}-#{dt.getDate()}")
-    http.get '/channel/:channel/date/:date', (req, res) =>
+      if req.query["callback"]
+        res.redirect("/channel/#{req.params.channel}/#{dt.getFullYear()}-#{dt.getMonth() + 1}-#{dt.getDate()}?callback=#{req.query['callback']}")
+      else
+        res.redirect("/channel/#{req.params.channel}/#{dt.getFullYear()}-#{dt.getMonth() + 1}-#{dt.getDate()}")
+    http.get '/channel/:channel/:date', (req, res) =>
       dt = req.params.date.split('-')
-      from = new Date(dt[0], dt[1], dt[2]).getTime()
+      from = new Date(dt[0], (dt[1] - 1), dt[2]).getTime()
       to = from + (86399 * 1000)
       @logger.model["##{req.params.channel}"].find { timestamp: { $gt: from, $lt: to } }, (err, logs) ->
         console.log err if err # TODO: better error handling
         msg = []
         _.each logs, (log) ->
           msg.push log if log
-        res.send JSON.stringify(msg)
-    http.get '/channel/:channel/date/:date/:epoch', (req, res) =>
-      @logger.model["##{req.params.channel}"].find { timestamp: { $gt: req.params.epoch } }, (err, logs) ->
-        console.log err if err # TODO: better error handling
-        msg = []
-        _.each logs, (log) ->
-          msg.push log if log
-        res.send JSON.stringify(msg)
+        res.json msg
 
 class Logger
   constructor: (mongoose, opts) ->
