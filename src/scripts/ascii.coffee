@@ -3,7 +3,7 @@
 # hubot ascii me <text> - Show text in ascii art.
 
 module.exports = (robot) ->
-  robot.respond /ascii( me)? (.+)/i, (msg) ->
+  robot.hear /^ascii( me)? (.+)/i, (msg) ->
     msg
       .http("http://asciime.heroku.com/generate_ascii")
       .query(s: msg.match[2])
