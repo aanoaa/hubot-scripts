@@ -16,7 +16,7 @@ module.exports = (robot) ->
       .get() (err, res, body) ->
         parser.parseComplete body
         titles = select handler.dom, 'title'
-        title = if titles then titles[0].children[0].raw else 'no title'
+        title = if titles[0] then titles[0].children[0].raw else 'no title'
         msg
           .http("http://api.bitly.com/v3/shorten")
           .query
