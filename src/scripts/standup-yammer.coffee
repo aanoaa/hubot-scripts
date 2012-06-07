@@ -51,7 +51,7 @@ makeBody = (robot, group, logs) ->
   for log in logs
     if log.message.user.name isnt prev
       body += "\n#{log.message.user.name}:\n"
-    body += "#{log.message.text} (#{new Date(log.time).toLocaleTimeString()})\n"
+    body += "  #{log.message.text}\n"
     prev = log.message.user.name
 
   body
