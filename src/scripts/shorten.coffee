@@ -4,6 +4,8 @@
 
 select     = require("soupselect").select
 htmlparser = require "htmlparser"
+Buffer     = require('buffer').Buffer
+Iconv      = require('iconv').Iconv
 
 handler = new htmlparser.DefaultHandler()
 parser  = new htmlparser.Parser handler
@@ -11,8 +13,6 @@ parser  = new htmlparser.Parser handler
 module.exports = (robot) ->
   robot.hear /(http(s?)\:\/\/\S+)/, (msg) ->
     return if msg.match[1].match(/twitter/) # twitter.coffee 에서 알아서 할거임
-
-    parser.parseComplete body
 
     msg
       .http(msg.match[1])
@@ -27,6 +27,16 @@ module.exports = (robot) ->
           if titles[0] then title = titles[0].children[0].raw
         catch error
           console.log error
+
+        matched = body.match(/charset ?= ?\"?[\'\"]?([^\'\"\/>]+)/)
+        if matched[1]
+          if matched[1].match(/kr$/i) or matched[1].match(/^ks_c/i)
+            try
+              iconv  = new Iconv('CP949', 'UTF-8')
+              buffer = iconv.convert(title)
+              title  = buffer.toString()
+            catch error
+              console.log error
 
         msg
           .http("http://api.bitly.com/v3/shorten")
