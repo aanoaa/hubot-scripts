@@ -10,13 +10,24 @@ parser  = new htmlparser.Parser handler
 
 module.exports = (robot) ->
   robot.hear /(http(s?)\:\/\/\S+)/, (msg) ->
-    return if msg.match[1].match(/twitter/)
+    return if msg.match[1].match(/twitter/) # twitter.coffee 에서 알아서 할거임
+
+    parser.parseComplete body
+
     msg
       .http(msg.match[1])
       .get() (err, res, body) ->
-        parser.parseComplete body
-        titles = select handler.dom, 'title'
-        title = if titles[0] then titles[0].children[0].raw else 'no title'
+        if res.statusCode isnt 200
+          return msg.send err
+
+        title = 'no title'
+        try
+          parser.parseComplete body
+          titles = select handler.dom, 'title'
+          if titles[0] then title = titles[0].children[0].raw
+        catch error
+          console.log error
+
         msg
           .http("http://api.bitly.com/v3/shorten")
           .query
@@ -25,5 +36,8 @@ module.exports = (robot) ->
             longUrl: msg.match[1]
             format: "json"
           .get() (err, res, body) ->
-            response = JSON.parse body
-            msg.send if response.status_code is 200 then "[#{title}] - #{response.data.url}" else response.status_txt
+            try
+              response = JSON.parse body
+              msg.send if response.status_code is 200 then "[#{title}] - #{response.data.url}" else response.status_txt
+            catch error
+              msg.send "failed url shorten for `#{msg.match[1]}`"
