@@ -29,7 +29,7 @@ module.exports = (robot) ->
           console.log error
 
         matched = body.match(/charset ?= ?\"?[\'\"]?([^\'\"\/>]+)/)
-        if matched[1]
+        if matched and matched[1] != undefined
           if matched[1].match(/kr$/i) or matched[1].match(/^ks_c/i)
             try
               iconv  = new Iconv('CP949', 'UTF-8')
