@@ -1,10 +1,18 @@
-# Show the commiters from a repo
+# Description:
+#   Show the commiters from a repo
 #
-# hubot repo commiters <repo> - shows commiters of repository
-# hubot repo top-commiters <repo> - shows top commiters of repository
-
-# You need to set the following variables:
-#   HUBOT_GITHUB_TOKEN ="<oauth token>"
+# Dependencies:
+#   "githubot": "0.2.0"
+#
+# Configuration:
+#   HUBOT_GITHUB_TOKEN
+#
+# Commands:
+#   hubot repo commiters <repo> - shows commiters of repository
+#   hubot repo top-commiters <repo> - shows top commiters of repository
+#
+# Author:
+#   vquaiato
 
 module.exports = (robot) ->
   github = require("githubot")(robot)

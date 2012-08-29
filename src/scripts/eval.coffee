@@ -1,6 +1,18 @@
-# evaluate code.
+# Description:
+#   evaluate code
 #
-# eval <code> - evaluate perl <code> and show the result.
+# Dependencies:
+#   None
+#
+# Configuration:
+#   None
+#
+# Commands:
+#   hubot eval me <lang> <code> - evaluate <code> and show the result
+#
+# Author:
+#   aanoaa
+>>>>>>> github/master
 
 module.exports = (robot) ->
   robot.hear /^eval (.+)/i, (msg) ->

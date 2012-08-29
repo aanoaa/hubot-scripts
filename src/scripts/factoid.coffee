@@ -1,12 +1,24 @@
-# javabot style factoid support for your hubot. Build a factoid library
-# and save yourself typing out answers to similar questions.
+# Description:
+#   javabot style factoid support for your hubot. Build a factoid library
+#   and save yourself typing out answers to similar questions
 #
-# ~<factoid> is <some phrase, link, whatever> - Creates a factoid.
-# ~<factoid> is also <some phrase, link, whatever> - Updates a factoid.
-# ~<factoid> - Prints the factoid, if it exists. Otherwise tells you there is no factoid.
-# ~tell <user> about <factoid> - Tells the user about a factoid, if it exists.
-# ~~<user> <factoid> - Same as ~tell, less typing.
-# <factoid>? - Same as ~<factiod> except for there is no response if not found.
+# Dependencies:
+#   None
+#
+# Configuration:
+#   None
+#
+# Commands:
+#   ~<factoid> is <some phrase, link, whatever> - Creates a factoid
+#   ~<factoid> is also <some phrase, link, whatever> - Updates a factoid.
+#   ~<factoid> - Prints the factoid, if it exists. Otherwise tells you there is no factoid
+#   ~tell <user> about <factoid> - Tells the user about a factoid, if it exists
+#   ~~<user> <factoid> - Same as ~tell, less typing
+#   <factoid>? - Same as ~<factiod> except for there is no response if not found
+#   hubot no, <factoid> is <some phrase, link, whatever> - Replaces the full definition of a factoid
+#
+# Author:
+#   arthurkalm
 
 class Factoids
   constructor: (@robot) ->
@@ -18,9 +30,7 @@ class Factoids
     if @cache[key]
       "#{key} is already #{@cache[key]}"
     else 
-      @cache[key] = val
-      @robot.brain.data.factoids = @cache
-      "OK. #{key} is #{val} "
+      this.setFactoid key, val
 
   append: (key, val) ->
     if @cache[key]
@@ -29,6 +39,11 @@ class Factoids
       "Ok. #{key} is also #{val} "
     else 
       "No factoid for #{key}. It can't also be #{val} if it isn't already something."
+
+  setFactoid: (key, val) ->
+    @cache[key] = val
+    @robot.brain.data.factoids = @cache
+    "OK. #{key} is #{val} "
 
   niceGet: (key) ->
     @cache[key] or "No factoid for #{key}"
@@ -66,3 +81,6 @@ module.exports = (robot) ->
     factoid = factoids.get msg.match[1]
     if factoid
       msg.reply msg.match[1] + " is " + factoid
+
+  robot.respond /no, (.+) is (.+)/i, (msg) ->
+    msg.reply factoids.setFactoid msg.match[1], msg.match[2]
