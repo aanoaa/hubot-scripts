@@ -5,10 +5,14 @@
 module.exports = (robot) ->
   client = new JSONRPC
     url: process.env.HUBOT_BZ_JSONRPC_URL
-  robot.hear /^bug (.+)/i, (msg) ->
+  robot.hear /^bug ([0-9]+)/i, (msg) ->
     client.call 'Bug.get', ids: [msg.match[1]], (self, res, body) ->
-      bug = JSON.parse(body)['result']['bugs'][0]
-      msg.send "\##{bug.id} #{bug.summary} - [#{bug.status}, #{bug.assigned_to}, #{priorityMap[bug.priority]}]"
+      bug = JSON.parse(body)['result']?['bugs']?[0]
+      msg.send "\##{bug.id} #{bug.summary} - [#{bug.status}, #{bug.assigned_to}, #{priorityMap[bug.priority]}]" if bug
+  robot.hear /^bug search (.+)/i, (msg) ->
+    client.call 'Bug.search', summary: msg.match[1], (self, res, body) ->
+      bug = JSON.parse(body)['result']?['bugs']?[0]
+      msg.send "\##{bug.id} #{bug.summary} - [#{bug.status}, #{bug.assigned_to}, #{priorityMap[bug.priority]}]" if bug
 
 priorityMap =
   Lowest : '★☆☆☆☆'
