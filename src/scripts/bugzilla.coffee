@@ -4,7 +4,7 @@
 
 module.exports = (robot) ->
   client = new JSONRPC
-    url: "http://bugs.silex.kr/jsonrpc.cgi"
+    url: process.env.HUBOT_BZ_JSONRPC_URL
   robot.hear /^bug (.+)/i, (msg) ->
     client.call 'Bug.get', ids: [msg.match[1]], (self, res, body) ->
       bug = JSON.parse(body)['result']['bugs'][0]
