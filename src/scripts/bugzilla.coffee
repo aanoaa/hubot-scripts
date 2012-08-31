@@ -1,11 +1,24 @@
-# Yet another bugzilla client.
+# Description:
+#   Yet another bugzilla client.
+# 
+# Dependencies:
+#   scoped-http-client
+#
+# Configuration:
+#   HUBOT_BZ_JSONRPC_URL
+#   HUBOT_BZ_USERNAME
+#   HUBOT_BZ_PASSWORD
+#
+# Commands:
+#   bug (<bug id>|<keyword>) - retrun bug summary, status, assignee and priority if exist
+#   bug search <keyword>     - retrun bug summary, status, assignee and priority if exist
 #
 # bug <number> - show the bug title.
 
 module.exports = (robot) ->
   client = new JSONRPC
     url: process.env.HUBOT_BZ_JSONRPC_URL
-  robot.hear /^bug ([0-9]+)/i, (msg) ->
+  robot.hear /^bug ([0-9a-zA-Z]+)/i, (msg) ->
     client.call 'Bug.get', ids: [msg.match[1]], (self, res, body) ->
       bug = JSON.parse(body)['result']?['bugs']?[0]
       msg.send "\##{bug.id} #{bug.summary} - [#{bug.status}, #{bug.assigned_to}, #{priorityMap[bug.priority]}]" if bug
