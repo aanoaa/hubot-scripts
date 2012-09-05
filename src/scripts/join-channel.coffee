@@ -14,8 +14,6 @@
 # Author:
 #   aanoaa
 
-Adapter = require('hubot').Adapter
-
 module.exports = (robot) ->
   isIrc = /irc/i.test(robot.adapter.constructor.toString())
   ## http://www.irchelp.org/irchelp/rfc/chapter1.html#c1_3
