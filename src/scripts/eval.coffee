@@ -12,7 +12,6 @@
 #
 # Author:
 #   aanoaa
->>>>>>> github/master
 
 module.exports = (robot) ->
   robot.hear /^eval (.+)/i, (msg) ->
