@@ -28,6 +28,7 @@ module.exports = (robot) ->
 
     msg
       .http(msg.match[1])
+      .header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:10.0.7) Gecko/20100101 Firefox/10.0.7 Iceweasel/10.0.7")
       .get() (err, res, body) ->
         if res.statusCode isnt 200
           return msg.send err
