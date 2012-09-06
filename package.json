@@ -19,7 +19,9 @@
     "redis": "0.7.2",
     "optparse": "1.0.3",
     "iconv": "1.2.3",
-    "scoped-http-client": "0.9.7"
+    "scoped-http-client": "0.9.7",
+    "mysql": "2.0.0-alpha3",
+    "express": "3.0"
   },
 
   "directories":  {
