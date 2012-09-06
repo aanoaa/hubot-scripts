@@ -16,6 +16,16 @@ module.exports = (robot) ->
       postYammer(robot, group, msg.message.user.room, msg, buff)
       delete robot.brain.data.tempYammerBuffer[group]
 
+  robot.respond /i am \@?([a-z0-9-]+) on yammer/i, (msg) ->
+    yammerName = msg.match[1]
+    msg.message.user.yammerName = yammerName
+    msg.send "Ok, you are " + yammerName + " on Yammer"
+
+  robot.respond /forget me on yammer/i, (msg) ->
+    user = msg.message.user
+    user.yammerName = null
+    msg.reply("Ok, I have no idea who you are anymore.")
+
 querystring = require 'querystring'
 
 postYammer = (robot, group, room, response, logs) ->
@@ -33,10 +43,13 @@ postYammer = (robot, group, room, response, logs) ->
       .post(querystring.stringify { 'group_id': group_id, 'body': body, 'topic0': 'standup' }) (err, res, body) ->
         console.log body
         if err
-          response.send "Posting to the group #{group_id} FAILED: #{body}"
+          response.send "Posting to the group #{group_id} FAILED: #{err}"
         else
           data = JSON.parse body
-          response.send "Posted to Yammer: #{data['messages'][0]['web_url']}"
+          if data['messages']
+            response.send "Posted to Yammer: #{data['messages'][0]['web_url']}"
+          else
+            response.send "Posting to the group #{group_id} FAILED: #{body}"
 
 getYammerGroup = (robot, group) ->
   robot.brain.data.yammerGroups or= {}
@@ -50,8 +63,11 @@ makeBody = (robot, group, logs) ->
   prev = undefined
   for log in logs
     if log.message.user.name isnt prev
-      body += "\n#{log.message.user.name}:\n"
-    body += "#{log.message.text}\n"
+      name = log.message.user.name
+      if log.message.user.yammerName
+        name = '@' + log.message.user.yammerName
+      body += "\n#{name}:\n"
+    body += "#{log.message.text} (#{new Date(log.time).toLocaleTimeString()})\n"
     prev = log.message.user.name
 
   body
