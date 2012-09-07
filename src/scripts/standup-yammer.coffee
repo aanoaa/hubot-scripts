@@ -67,7 +67,7 @@ makeBody = (robot, group, logs) ->
       if log.message.user.yammerName
         name = '@' + log.message.user.yammerName
       body += "\n#{name}:\n"
-    body += "#{log.message.text} (#{new Date(log.time).toLocaleTimeString()})\n"
+    body += "#{log.message.text}\n"
     prev = log.message.user.name
 
   body
